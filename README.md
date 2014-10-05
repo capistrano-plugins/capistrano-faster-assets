@@ -20,7 +20,7 @@ And then:
 
 ### Setup and usage
 
-Add this line to `Capfile`
+Add this line to `Capfile`, after `require 'capistrano/rails/assets'`
 
     require 'capistrano/faster_assets'
 
