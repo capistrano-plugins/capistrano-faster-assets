@@ -30,7 +30,7 @@ namespace :deploy do
 
               fetch(:assets_dependencies).each do |dep|
                 # execute raises if there is a diff
-                execute(:diff, '-Naur', release_path.join(dep), latest_release_path.join(dep)) rescue raise(PrecompileRequired)
+                execute(:diff, '-Nqr', release_path.join(dep), latest_release_path.join(dep)) rescue raise(PrecompileRequired)
               end
 
               info("Skipping asset precompile, no asset diff found")
