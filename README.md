@@ -23,6 +23,16 @@ And then:
 Add this line to `Capfile`, after `require 'capistrano/rails/assets'`
 
     require 'capistrano/faster_assets'
+    
+### Warning
+
+Please keep in mind, that if you use ERB in your assets, you might run into cases where Capistrano won't recompile assets when needed. For instance, let's say you have a CoffeeScript file like this:
+
+```coffee
+text = <%= helper.get_text %>
+```
+
+The assets might not get recompiled, even if they have to, as this gem only checks if the asset file has changed (which is probably the only safe/fast way to do this).
 
 ### More Capistrano automation?
 
