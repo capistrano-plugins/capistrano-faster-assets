@@ -28,15 +28,13 @@ namespace :deploy do
               # precompile if the previous deploy failed to finish precompiling
               execute(:ls, latest_release_path.join('assets_manifest_backup')) rescue raise(PrecompileRequired)
 
-              fetch(:assets_dependencies).each do |dep|
-		release = release_path.join(dep)
-		latest = latest_release_path.join(dep)
-		
-		# skip if both directories/files do not exist
-		next if [release, latest].map{|d| test "[ -e #{d} ]"}.uniq == [false]
-		
-                # execute raises if there is a diff
-                execute(:diff, '-Nqr', release, latest) rescue raise(PrecompileRequired)
+              # count the number of commits involving the assets dependencies between HEAD~1 and HEAD
+              # the result will be either zero or one
+              # but we have to play a trick to get the 0 returned as it's intpreted by the capture command
+              result = capture("cd #{repo_path} && git log HEAD~1..HEAD -- #{fetch(:assets_dependencies)*" "} | grep '^commit' --count || :")
+              if result != "0"
+                info("Asset changes require precompiling")
+                raise PrecompileRequired
               end
 
               info("Skipping asset precompile, no asset diff found")
