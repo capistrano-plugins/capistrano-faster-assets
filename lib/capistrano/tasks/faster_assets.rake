@@ -31,17 +31,18 @@ namespace :deploy do
               # count the number of commits involving the assets dependencies between HEAD~1 and HEAD
               # the result will be either zero or one
               # but we have to play a trick to get the 0 returned as it's intpreted by the capture command
-              result = capture("cd #{repo_path} && git log HEAD~1..HEAD -- #{fetch(:assets_dependencies)*" "} | grep '^commit' --count || :")
-              if result != "0"
-                info("Asset changes require precompiling")
-                raise PrecompileRequired
-              end
+              previous_rev = capture("tail -1 #{revision_log}")
+              previous_ref = previous_rev.match(/\(at (\w{7})\)/)[1]
+              current_ref = revision_log_message.match(/\(at (\w{7})\)/)[1]
+              result = capture("cd #{repo_path} && git log #{previous_ref}..#{current_ref} -- #{fetch(:assets_dependencies)*" "} | grep '^commit' --count || :")
+              raise PrecompileRequired if result != "0"
 
               info("Skipping asset precompile, no asset diff found")
 
               # copy over all of the assets from the last release
               execute(:cp, '-r', latest_release_path.join('public', fetch(:assets_prefix)), release_path.join('public', fetch(:assets_prefix)))
             rescue PrecompileRequired
+              info("Asset changes require precompiling")
               execute(:rake, "assets:precompile")
             end
           end
@@ -50,3 +51,4 @@ namespace :deploy do
     end
   end
 end
+
