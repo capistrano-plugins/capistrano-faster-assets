@@ -11,6 +11,7 @@ Add this to `Gemfile`:
 
     group :development do
       gem 'capistrano', '~> 3.1'
+      gem 'capistrano-rails', '~> 1.1'
       gem 'capistrano-faster-assets', '~> 1.0'
     end
 
