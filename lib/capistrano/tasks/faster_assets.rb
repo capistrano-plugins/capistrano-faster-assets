@@ -4,7 +4,7 @@ require "capistrano/faster_assets"
 
 Capistrano::Configuration.instance(:must_exist).load do
   # set the locations that we will look for changed assets to determine whether to precompile
-  _cset(:assets_dependencies) { %w(app/assets lib/assets vendor/assets Gemfile.lock config/routes.rb) }
+  _cset(:assets_dependencies) { Capistrano::FasterAssets::DEPENDENCIES }
   _cset(:assets_manifest_basename) { "assets_manifest" }
 
   # Alias the base capistrano provided task so that we can still access it

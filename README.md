@@ -3,8 +3,6 @@
 This gem speeds up asset compilation by skipping the assets:precompile task if none of the assets were changed
 since last release.
 
-Works *only* with Capistrano 3+.
-
 ### Installation
 
 Add this to `Gemfile`:
@@ -24,7 +22,7 @@ And then:
 Add this line to `Capfile`, after `require 'capistrano/rails/assets'`
 
     require 'capistrano/faster_assets'
-    
+
 ### Warning
 
 Please keep in mind, that if you use ERB in your assets, you might run into cases where Capistrano won't recompile assets when needed. For instance, let's say you have a CoffeeScript file like this:

@@ -11,8 +11,6 @@ Gem::Specification.new do |gem|
   gem.description   = <<-EOF.gsub(/^\s+/, '')
     Speeds up asset compilation by skipping the assets:precompile task if none of the assets were changed since last release.
 
-    Works *only* with Capistrano 3+.
-
     Based on https://coderwall.com/p/aridag
   EOF
   gem.summary       = "Speeds up asset compilation if none of the assets were changed since last release."
@@ -23,6 +21,6 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_dependency "capistrano", ">= 3.1"
+  gem.add_dependency "capistrano", ">= 2.0"
   gem.add_development_dependency "rake"
 end
