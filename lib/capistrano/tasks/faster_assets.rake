@@ -42,7 +42,7 @@ namespace :deploy do
               info("Skipping asset precompile, no asset diff found")
 
               # copy over all of the assets from the last release
-              execute(:cp, '-rT', latest_release_path.join('public', fetch(:assets_prefix)), release_path.join('public', fetch(:assets_prefix)))
+              execute(:cp, '-r', latest_release_path.join('public', fetch(:assets_prefix)), release_path.join('public', fetch(:assets_prefix)))
             rescue PrecompileRequired
               execute(:rake, "assets:precompile")
             end
