@@ -15,9 +15,11 @@ namespace :deploy do
     task :precompile do
       on roles(fetch(:assets_roles)) do
         within release_path do
-          with rails_env: fetch(:rails_env) do
+          # assets_env should be a hash, ie: assets_env: { skip_it: false }
+          _assets_env = fetch(:assets_env, {}).merge(rails_env: fetch(:rails_env))
+          with _assets_env do
             begin
-	      # find the most recent release
+              # find the most recent release
               latest_release = capture(:ls, '-xr', releases_path).split[1]
 
               # precompile if this is the first deploy
@@ -29,20 +31,29 @@ namespace :deploy do
               execute(:ls, latest_release_path.join('assets_manifest_backup')) rescue raise(PrecompileRequired)
 
               fetch(:assets_dependencies).each do |dep|
-		release = release_path.join(dep)
-		latest = latest_release_path.join(dep)
-		
-		# skip if both directories/files do not exist
-		next if [release, latest].map{|d| test "[ -e #{d} ]"}.uniq == [false]
-		
+                release = release_path.join(dep)
+                latest = latest_release_path.join(dep)
+
+                # skip if both directories/files do not exist
+                next if [release, latest].map{|d| test "[ -e #{d} ]"}.uniq == [false]
+
                 # execute raises if there is a diff
                 execute(:diff, '-Nqr', release, latest) rescue raise(PrecompileRequired)
               end
 
               info("Skipping asset precompile, no asset diff found")
 
-              # copy over all of the assets from the last release
-              execute(:cp, '-r', latest_release_path.join('public', fetch(:assets_prefix)), release_path.join('public', fetch(:assets_prefix)))
+              release_asset_path = release_path.join('public', fetch(:assets_prefix))
+              # skip if assets directory is symlink
+              begin
+                execute(:test, '-L', release_asset_path.to_s)
+              rescue
+                # copy over all of the assets from the last release
+                execute(:cp, '-r', latest_release_path.join('public', fetch(:assets_prefix)), release_asset_path.parent)
+              end
+
+              # copy assets if manifest file is not exist (this is first deploy after using symlink)
+              execute(:ls, release_asset_path.join('manifest*')) rescue raise(PrecompileRequired)
             rescue PrecompileRequired
               execute(:rake, "assets:precompile")
             end
