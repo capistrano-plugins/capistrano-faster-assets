@@ -24,6 +24,12 @@ And then:
 Add this line to `Capfile`, after `require 'capistrano/rails/assets'`
 
     require 'capistrano/faster_assets'
+
+If U want to add some environment variable when compile assets, add `assets_env` in your stage file.
+
+```ruby
+set :assets_env, { doit: false }
+```
     
 ### Warning
 

@@ -15,7 +15,9 @@ namespace :deploy do
     task :precompile do
       on roles(fetch(:assets_roles)) do
         within release_path do
-          with rails_env: fetch(:rails_env) do
+          # assets_env should be a hash, ie: assets_env: { skip_it: false }
+          _assets_env = fetch(:assets_env, {}).merge(rails_env: fetch(:rails_env))
+          with _assets_env do
             begin
               # find the most recent release
               latest_release = capture(:ls, '-xr', releases_path).split[1]
