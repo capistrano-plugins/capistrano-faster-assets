@@ -42,7 +42,17 @@ namespace :deploy do
               info("Skipping asset precompile, no asset diff found")
 
               # copy over all of the assets from the last release
-              execute(:cp, '-r', latest_release_path.join('public', fetch(:assets_prefix)), release_path.join('public', fetch(:assets_prefix)))
+              release_asset_path = release_path.join('public', fetch(:assets_prefix))
+              # skip if assets directory is symlink
+              begin
+                execute(:test, '-L', release_asset_path.to_s)
+              rescue
+                execute(:cp, '-r', latest_release_path.join('public', fetch(:assets_prefix)), release_asset_path.parent)
+              end
+
+              # copy assets if manifest file is not exist (this is first deploy after using symlink)
+              execute(:ls, release_asset_path.join('manifest*')) rescue raise(PrecompileRequired)
+
             rescue PrecompileRequired
               execute(:rake, "assets:precompile")
             end
