@@ -51,7 +51,7 @@ namespace :deploy do
               end
 
               # copy assets if manifest file is not exist (this is first deploy after using symlink)
-              execute(:ls, release_asset_path.join('manifest*')) rescue raise(PrecompileRequired)
+              execute(:ls, release_asset_path.join('.sprockets-manifest*')) rescue raise(PrecompileRequired)
 
             rescue PrecompileRequired
               execute(:rake, "assets:precompile")
