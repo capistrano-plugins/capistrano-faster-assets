@@ -3,6 +3,7 @@
 
 # set the locations that we will look for changed assets to determine whether to precompile
 set :assets_dependencies, %w(app/assets lib/assets vendor/assets Gemfile.lock config/routes.rb)
+set :assets_shared_dependencies, []
 
 # clear the previous precompile task
 Rake::Task["deploy:assets:precompile"].clear_actions
@@ -17,7 +18,7 @@ namespace :deploy do
         within release_path do
           with rails_env: fetch(:rails_env) do
             begin
-	      # find the most recent release
+	            # find the most recent release
               latest_release = capture(:ls, '-xr', releases_path).split[1]
 
               # precompile if this is the first deploy
@@ -29,14 +30,19 @@ namespace :deploy do
               execute(:ls, latest_release_path.join('assets_manifest_backup')) rescue raise(PrecompileRequired)
 
               fetch(:assets_dependencies).each do |dep|
-		release = release_path.join(dep)
-		latest = latest_release_path.join(dep)
-		
-		# skip if both directories/files do not exist
-		next if [release, latest].map{|d| test "[ -e #{d} ]"}.uniq == [false]
-		
+                release = release_path.join(dep)
+                latest = latest_release_path.join(dep)
+
+                # skip if both directories/files do not exist
+                next if [release, latest].map{|d| test "[ -e #{d} ]"}.uniq == [false]
+
                 # execute raises if there is a diff
                 execute(:diff, '-Nqr', release, latest) rescue raise(PrecompileRequired)
+              end
+
+              fetch(:assets_shared_dependencies).each do |dep|
+                shared_file = shared_path.join(dep)
+                execute(:test, latest_release_path, '-nt', shared_file) rescue raise(PrecompileRequired)
               end
 
               info("Skipping asset precompile, no asset diff found")
