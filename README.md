@@ -25,6 +25,10 @@ Add this line to `Capfile`, after `require 'capistrano/rails/assets'`
 
     require 'capistrano/faster_assets'
     
+Configure your asset depedencies in deploy.rb if you need to check additional paths (e.g. if you have some assets in YOUR_APP/engines/YOUR_ENGINE/app/assets). Default paths are:
+
+    set :assets_dependencies, %w(app/assets lib/assets vendor/assets Gemfile.lock config/routes.rb)
+    
 ### Warning
 
 Please keep in mind, that if you use ERB in your assets, you might run into cases where Capistrano won't recompile assets when needed. For instance, let's say you have a CoffeeScript file like this:
