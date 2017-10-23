@@ -28,16 +28,14 @@ namespace :deploy do
               # precompile if the previous deploy failed to finish precompiling
               execute(:ls, latest_release_path.join('assets_manifest_backup')) rescue raise(PrecompileRequired)
 
-              fetch(:assets_dependencies).each do |dep|
-		release = release_path.join(dep)
-		latest = latest_release_path.join(dep)
-		
-		# skip if both directories/files do not exist
-		next if [release, latest].map{|d| test "[ -e #{d} ]"}.uniq == [false]
-		
-                # execute raises if there is a diff
-                execute(:diff, '-Nqr', release, latest) rescue raise(PrecompileRequired)
-              end
+              # count the number of commits involving the assets dependencies between HEAD~1 and HEAD
+              # the result will be either zero or one
+              # but we have to play a trick to get the 0 returned as it's intpreted by the capture command
+              previous_rev = capture("tail -1 #{revision_log}")
+              previous_ref = previous_rev.match(/\(at (\w{7})\)/)[1]
+              current_ref = revision_log_message.match(/\(at (\w{7})\)/)[1]
+              result = capture("cd #{repo_path} && git log #{previous_ref}..#{current_ref} -- #{fetch(:assets_dependencies)*" "} | grep '^commit' --count || :")
+              raise PrecompileRequired if result != "0"
 
               info("Skipping asset precompile, no asset diff found")
 
@@ -54,6 +52,7 @@ namespace :deploy do
               execute(:ls, release_asset_path.join('manifest*')) rescue raise(PrecompileRequired)
 
             rescue PrecompileRequired
+              info("Asset changes require precompiling")
               execute(:rake, "assets:precompile")
             end
           end
@@ -62,3 +61,4 @@ namespace :deploy do
     end
   end
 end
+
