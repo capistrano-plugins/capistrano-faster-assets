@@ -3,7 +3,7 @@
 
 # set the locations that we will look for changed assets to determine whether to precompile
 set :assets_dependencies, %w(app/assets lib/assets vendor/assets Gemfile.lock config/routes.rb)
-
+set :asset_compilation_required, false
 # clear the previous precompile task
 Rake::Task["deploy:assets:precompile"].clear_actions
 class PrecompileRequired < StandardError;
@@ -65,6 +65,7 @@ namespace :deploy do
               end
 
             rescue PrecompileRequired
+              set :asset_compilation_required, true
               execute(:rake, "assets:precompile")
             end
           end
