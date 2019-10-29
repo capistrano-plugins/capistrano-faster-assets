@@ -3,6 +3,7 @@
 
 # set the locations that we will look for changed assets to determine whether to precompile
 set :assets_dependencies, %w(app/assets lib/assets vendor/assets Gemfile.lock config/routes.rb)
+set :force_precompile, false
 
 # clear the previous precompile task
 Rake::Task["deploy:assets:precompile"].clear_actions
@@ -17,6 +18,8 @@ namespace :deploy do
         within release_path do
           with rails_env: fetch(:rails_env) do
             begin
+              raise PrecompileRequired.new("A forced precompile was triggered") if fetch(:force_precompile)
+
               # find the most recent release
               latest_release = capture(:ls, '-xr', releases_path).split[1]
 
